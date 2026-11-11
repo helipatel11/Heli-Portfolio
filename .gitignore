@@ -1,0 +1,13 @@
+# Hugo build output (rebuilt by CI)
+public/
+resources/_gen/
+.hugo_build.lock
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
