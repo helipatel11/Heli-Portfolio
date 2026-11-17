@@ -18,9 +18,9 @@ I believe good engineering goes beyond making something work. It's about underst
 
 I'm currently building practical engineering projects that bring together machine learning, large language models, cloud infrastructure, automation, and observability. Two areas are central to my work:
 
-### Support Intelligence Platform
+### LLMOps Support Assistant
 
-An ML- and LLM-powered application that combines support ticket classification with Retrieval-Augmented Generation (RAG). I'm strengthening it through model evaluation, retrieval quality, versioning, monitoring, and reliable deployment.
+An ML- and LLM-powered application that combines support ticket classification with Retrieval-Augmented Generation (RAG). I'm strengthening it through model evaluation, retrieval quality, versioning, monitoring, and reliable deployment. [Code, results and runbook on GitHub](https://github.com/helipatel11/llmops-support-assistant).
 
 ### Kubernetes Reliability Engineering
 
