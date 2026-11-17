@@ -19,7 +19,7 @@ cover:
 
 I had a working app: a FastAPI service that classifies support tickets and answers IT questions with retrieval-augmented generation on a local LLM, deployed on Kubernetes on AWS. It "worked", but I couldn't answer the questions someone who owns a production system gets asked. How good is it? What exactly is running right now? Is it healthy, and where does the time go? How much load can it take? And what happens when a bad release ships?
 
-So, the goal of this project was to answer each of those with evidence, on a hobby budget. I kept the models small on purpose. Basically, the point is everything around them.
+The goal of this project was to answer each of those with evidence, on a hobby budget. I kept the models small on purpose: the point is everything around them.
 
 {{< demo-video title="Demo" >}}
 
