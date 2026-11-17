@@ -2,6 +2,52 @@ baseURL = 'https://helipatel.com/'
 languageCode = 'en-us'
 title = 'Heli Patel'
 theme = "github.com/adityatelange/hugo-PaperMod"
+enableRobotsTXT = true
+
+[params]
+  description = "Heli Patel: MLOps, LLMOps, Cloud Engineering, and Kubernetes. Projects and engineering notes on building reliable, intelligent systems."
+  author = "Heli Patel"
+  defaultTheme = "auto"
+  mainSections = ["projects", "posts"]
+  ShowReadingTime = true
+  ShowCodeCopyButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowToc = true
+  TocOpen = false
+
+  [params.profileMode]
+    enabled = true
+    title = "Heli Patel"
+    subtitle = "MLOps · LLMOps · Cloud · Kubernetes. I build intelligent applications and reliable cloud-native systems, and document what I learn along the way."
+    # imageUrl = "/images/profile.jpg"   # add a photo to static/images/ and uncomment
+    # imageTitle = "Heli Patel"
+    # imageWidth = 140
+    # imageHeight = 140
+
+    [[params.profileMode.buttons]]
+      name = "Projects"
+      url = "/projects/"
+
+    [[params.profileMode.buttons]]
+      name = "Posts"
+      url = "/posts/"
+
+    [[params.profileMode.buttons]]
+      name = "About"
+      url = "/about/"
+
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/helipatel11"
+
+  [[params.socialIcons]]
+    name = "linkedin"
+    url = "https://www.linkedin.com/in/helipatelhp/"
+
+  [[params.socialIcons]]
+    name = "rss"
+    url = "/index.xml"
 
 [menu]
 

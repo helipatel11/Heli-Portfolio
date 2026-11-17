@@ -2,6 +2,14 @@
 title: "Self-Healing EKS Cluster"
 date: 2025-11-17
 description: "Building a Self-Healing EKS Cluster with Terraform and Cluster Autoscaler"
+tags: ["aws", "kubernetes", "eks", "terraform", "autoscaling", "devops"]
+# Unlisted: still reachable by URL, but hidden from lists, home page, tags, RSS, sitemap and search engines.
+# To re-list, delete the four lines below.
+build:
+  list: never
+sitemap:
+  disable: true
+robotsNoIndex: true
 ---
 
 
