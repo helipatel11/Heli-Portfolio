@@ -33,6 +33,8 @@ It runs on k3s on one AWS EC2 t3.large, created with Terraform and built by GitH
 
 ## Architecture
 
+![Architecture: Terraform and GitHub Actions on the left; on one EC2 node, k3s runs Traefik, the FastAPI pods, Prometheus and Grafana, while Ollama runs outside Kubernetes](/images/llmops/architecture.png)
+
 - **Infrastructure:** Terraform creates the VPC, a security group that admits only my IP, the EC2 instance (IMDSv2, instance role), the ECR repository and the IAM roles. A cloud-init bootstrap installs k3s and Ollama and pulls the models.
 - **Kubernetes:** the API runs as a Deployment with an HPA (2 to 5 pods) behind Traefik. Each pod builds its own vector index in an init container, and `/ready` refuses traffic if the index doesn't match the retrieval config.
 - **Monitoring:** Prometheus scrapes every pod and holds the alert rules; the Grafana dashboard is committed as code.
