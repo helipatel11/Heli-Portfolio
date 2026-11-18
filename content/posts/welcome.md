@@ -14,7 +14,7 @@ Most of what I learn comes from things breaking: an IAM policy that’s one perm
 
 ## What you’ll find here
 
-- **[Projects](/projects/):** deep dives into things I’ve built end to end, including the architecture, the implementation, and the parts that didn’t go to plan. Good places to start are the [Cloud Resume Challenge](/projects/cloud-resume-challenge/) and [Plant Pal](/projects/plant-pal/).
+- **[Projects](/projects/):** deep dives into things I’ve built end to end, including the architecture, the implementation, and the parts that didn’t go to plan. Good places to start are the [LLMOps Support Assistant](/projects/llmops-support-assistant/), the [Cloud Resume Challenge](/projects/cloud-resume-challenge/) and [Plant Pal](/projects/plant-pal/).
 - **Posts:** shorter notes, lessons learned, and how-tos.
 
 ## How it’s built
