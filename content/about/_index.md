@@ -20,7 +20,7 @@ I'm currently building practical engineering projects that bring together machin
 
 ### LLMOps Support Assistant
 
-An ML- and LLM-powered application that combines support ticket classification with Retrieval-Augmented Generation (RAG). I'm strengthening it through model evaluation, retrieval quality, versioning, monitoring, and reliable deployment. [Code, results and runbook on GitHub](https://github.com/helipatel11/llmops-support-assistant).
+An ML- and LLM-powered application that combines support ticket classification with Retrieval-Augmented Generation (RAG). I'm strengthening it through model evaluation, retrieval quality, versioning, monitoring, and reliable deployment. [Read the project write-up](/projects/llmops-support-assistant/), or browse the [code, results and runbook on GitHub](https://github.com/helipatel11/llmops-support-assistant).
 
 ### Kubernetes Reliability Engineering
 

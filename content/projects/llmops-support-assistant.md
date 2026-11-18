@@ -1,7 +1,7 @@
 ---
 title: "LLMOps Support Assistant"
-date: 2026-11-17
-draft: true
+date: 2026-11-18
+draft: false
 description: "Taking a working ML + RAG app and making it measurable, versioned, monitored, load tested and safe to deploy, on k3s on AWS."
 tags: ["kubernetes", "k3s", "aws", "terraform", "llmops", "mlops", "prometheus", "grafana", "github-actions"]
 weight: 1

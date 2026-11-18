@@ -1,7 +1,7 @@
 ---
 title: "My Rollback Drill Found a Timeout That Never Worked"
-date: 2026-11-17
-draft: true
+date: 2026-11-18
+draft: false
 description: "I shipped a deliberately broken release to practise rolling back. The rollback worked; the drill found a streaming LLM timeout that had never limited anything."
 tags: ["kubernetes", "k3s", "sre", "monitoring", "prometheus", "llmops", "aws"]
 ShowToc: true
