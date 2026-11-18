@@ -11,13 +11,13 @@ cover:
   hiddenInSingle: true
 ---
 
-I shipped a deliberately broken release to my own system, to practise rolling back. I expected it to fail loudly. Instead, most requests succeeded and my alert stayed completely silent. So, something was wrong and nothing came up.
+I shipped a deliberately broken release to my own system, to practise rolling back. I expected it to fail loudly. Instead, most requests succeeded and my alert stayed completely silent. Something was wrong and nothing came up.
 
 The rollback itself worked fine. The real problem was a timeout I had added earlier in the project, which, it turns out, had never limited anything. In this post I explain how a rollback drill found it, and why I now think a drill tests your assumptions more than your tools.
 
 ## The project
 
-Basically, the app is a small support API with two jobs. `POST /predict` classifies a ticket's priority using TF-IDF and logistic regression. `POST /ask` answers IT questions using retrieval-augmented generation: ChromaDB finds the right documents, and tinyllama, running on Ollama, writes the answer. It runs on k3s on one AWS EC2 t3.large, built by GitHub Actions and created with Terraform.
+The app is a small support API with two jobs. `POST /predict` classifies a ticket's priority using TF-IDF and logistic regression. `POST /ask` answers IT questions using retrieval-augmented generation: ChromaDB finds the right documents, and tinyllama, running on Ollama, writes the answer. It runs on k3s on one AWS EC2 t3.large, built by GitHub Actions and created with Terraform.
 
 I kept the models small on purpose. What I wanted to learn was everything around them, the questions an owner of a production system gets asked: How good is it? What exactly is running right now? Is it healthy? How much load can it take? And what happens when a bad release ships? This post is about the last question. All numbers are from 15 November 2026, and the method behind each one is in the repo's results file.
 
@@ -46,7 +46,7 @@ Drill A went exactly as planned: zero user errors. I released the bad config at 
 
 Because the rollout never removes an old pod before a new one is Ready, the two old pods simply kept serving. At 04:36:11 Kubernetes marked the rollout `ProgressDeadlineExceeded`. During the whole window, all 481 `/predict` and 12 `/ask` requests succeeded. Rolling back with `kubectl rollout undo` took 2 seconds, since the old pods were still running.
 
-In a nutshell, this is the easy case: the pod knew it was broken, and said so.
+This is the easy case: the pod knew it was broken, and said so.
 
 ![Drill A: the new pod never becomes Ready, and user errors stay at zero](/images/llmops/drill-a.png)
 
@@ -54,7 +54,7 @@ In a nutshell, this is the easy case: the pod knew it was broken, and said so.
 
 The bad image passed every probe, as expected. What I did not expect: most of its requests succeeded. With a 5-second deadline and 13-second answers, nearly every `/ask` should have returned 503. But the alert never fired, and after watching for a while I rolled back by hand, which took 88 seconds.
 
-So, what was going on? My first check was the obvious one: were the bad pods really running with the 5-second setting? They were. The config inside the image said 5 s. The setting was there, it just wasn't doing what I thought.
+What was going on? My first check was the obvious one: were the bad pods really running with the 5-second setting? They were. The config inside the image said 5 s. The setting was there, it just wasn't doing what I thought.
 
 The cause was in what the timeout actually measured. I had passed it to the HTTP client (httpx) that talks to Ollama. An httpx timeout limits each *read*, meaning how long to wait for the next piece of data. The LLM sends its answer back token by token, so every new token arrived well within 5 seconds and reset the clock. A request could run for a whole minute without ever hitting it.
 
@@ -83,14 +83,14 @@ Then I ran drill B again with a new bad image. This time:
 
 | Time (UTC) | Event |
 | --- | --- |
-| 04:59:58 | Errors back to zero |
-| 04:59:52 | Rollback complete: 83 s |
-| 04:58:29 | I ran `kubectl rollout undo` |
-| 04:58:27 | Alert `EndpointErrorRatioHigh` firing for `/ask` |
-| 04:54:48 | Rollout complete: all pods on the bad image |
 | 04:53:58 | First bad pod Ready and taking traffic |
+| 04:54:48 | Rollout complete: all pods on the bad image |
+| 04:58:27 | Alert `EndpointErrorRatioHigh` firing for `/ask` |
+| 04:58:29 | I ran `kubectl rollout undo` |
+| 04:59:52 | Rollback complete: 83 s |
+| 04:59:58 | Errors back to zero |
 
-The alert fired 3 min 39 s after the rollout finished. `/predict` returned no 5xx at any point, because only `/ask` uses the LLM. And this time the error told me exactly what was wrong: `stage="generation", error="LLMDeadlineExceeded"`. No guessing needed.
+The alert fired 3 min 39 s after the rollout finished. `/predict` returned no 5xx at any point, because only `/ask` uses the LLM. And this time the error told me exactly what was wrong: `stage="generation", error="LLMDeadlineExceeded"`. No guessing needed. An error should say what is wrong and where to look, whether the person reading it is a customer or the engineer on call.
 
 ![Drill B, second run: pods by commit, /ask completions, and the alert going pending then firing](/images/llmops/drill-b2.png)
 
@@ -100,7 +100,7 @@ You may wonder why the alert took 3 min 39 s when it only needs 1 minute. The an
 
 Two things kept resetting that timer. First, two `/ask` requests happened to finish within the deadline, and in a quiet minute one success was enough to drop the ratio below the threshold. Second, right after the rollout, some 1-minute windows had no completed requests at all, so the ratio couldn't be calculated. The alert kept switching between pending and inactive until enough failures lined up.
 
-According to my observation, at this traffic level a percentage over one minute is simply the wrong tool. What I'd do next is a count-based alert for `/ask` (for example, "3 or more 5xx in 5 minutes") and a synthetic probe that asks a known question every minute, so there is always something to measure.
+At this traffic level, a percentage over one minute is simply the wrong tool. What I'd do next is a count-based alert for `/ask` (for example, "3 or more 5xx in 5 minutes") and a synthetic probe that asks a known question every minute, so there is always something to measure.
 
 ## What I took away
 
@@ -108,7 +108,5 @@ According to my observation, at this traffic level a percentage over one minute 
 - **Know which faults each check can see.** Readiness catches a pod that knows it is broken. Only monitoring catches a pod that looks healthy while users get errors.
 - **Read what a timeout actually measures.** Per-read, per-connection and whole-request timeouts are different things, and streaming hides the difference: my 60 s per-read timeout let an answer run as long as tokens kept coming.
 - **Ratio alerts need traffic.** An error percentage only works when there are enough requests to measure. With a few a minute, a single success can reset the alert, so alert on error counts instead and add a synthetic probe that sends a request every minute.
-
-I took a software usability course during my master's, and one lesson from it applies just as much to cloud systems: an error should tell you what is wrong and how to recover, whether the person reading it is a customer or the engineer on call.
 
 The code, the drill evidence (timeline logs, Prometheus exports, rollout history) and the full write-up are in the repo: [helipatel11/llmops-support-assistant](https://github.com/helipatel11/llmops-support-assistant). The project overview is on the [LLMOps Support Assistant](/projects/llmops-support-assistant/) page.
