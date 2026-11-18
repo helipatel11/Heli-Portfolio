@@ -1,0 +1,23 @@
+/* Home page: profile header no longer fills the whole screen, so projects show below it */
+.main .profile {
+    min-height: auto;
+    padding: 48px 0 24px;
+}
+
+.home-projects-title {
+    font-size: 24px;
+    margin: 16px 0 20px;
+}
+
+.home-projects .entry-header h3 {
+    font-size: 22px;
+    line-height: 1.3;
+}
+
+.home-projects-more {
+    text-align: right;
+}
+
+.home-projects-more a {
+    color: var(--secondary);
+}
