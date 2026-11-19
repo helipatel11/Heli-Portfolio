@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .t  { font-size: 18px; font-weight: 700; fill: #0f172a; }
+      .b  { font-size: 14px; fill: #334155; }
+      .lb { font-size: 13px; fill: #1e293b; font-weight: 600; }
+      .gl { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; }
+      .ln { stroke: #475569; stroke-width: 2; fill: none; marker-end: url(#arr); }
+      .mono { font-family: Menlo, 'SF Mono', Consolas, monospace; font-size: 13px; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <text x="40" y="48" style="font-size:24px;font-weight:700;fill:#0f172a">Cloud Resume Challenge: architecture</text>
+
+  <!-- Group boundaries -->
+  <rect x="450" y="290" width="420" height="480" rx="16" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="470" y="318" class="gl" fill="#0f766e">MANAGED BY TERRAFORM (LOCAL STATE)</text>
+
+  <rect x="960" y="290" width="600" height="480" rx="16" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="980" y="318" class="gl" fill="#475569">VISITOR COUNTER: CREATED OUTSIDE TERRAFORM</text>
+
+  <!-- Browser -->
+  <rect x="40" y="120" width="320" height="130" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="60" y="154" class="t">Visitor's browser</text>
+  <text x="60" y="182" class="mono">resume.helipatel.com</text>
+  <text x="60" y="208" class="b">HTML, CSS and index.js</text>
+
+  <!-- DNS -->
+  <rect x="480" y="120" width="360" height="110" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="500" y="154" class="t">Squarespace DNS</text>
+  <text x="500" y="182" class="b"><tspan class="mono">resume</tspan> CNAME → CloudFront</text>
+  <text x="500" y="206" class="b">(an unused Route 53 zone was deleted)</text>
+
+  <!-- CloudFront -->
+  <rect x="480" y="340" width="360" height="150" rx="12" fill="#fff8ee" stroke="#e8a33d" stroke-width="1.5"/>
+  <text x="500" y="374" class="t">Amazon CloudFront</text>
+  <text x="500" y="402" class="b">ACM certificate for resume.helipatel.com</text>
+  <text x="500" y="426" class="b">HTTPS only, TLS 1.2 minimum</text>
+  <text x="500" y="450" class="b">Caching disabled: every request goes to S3</text>
+
+  <!-- S3 -->
+  <rect x="480" y="590" width="360" height="150" rx="12" fill="#fff8ee" stroke="#e8a33d" stroke-width="1.5"/>
+  <text x="500" y="624" class="t">Amazon S3 (private bucket)</text>
+  <text x="500" y="652" class="b">Site files from <tspan class="mono">Website/</tspan></text>
+  <text x="500" y="676" class="b">Default encryption (SSE-S3)</text>
+  <text x="500" y="700" class="b">Policy: only this distribution can read</text>
+
+  <!-- Lambda -->
+  <rect x="990" y="340" width="540" height="150" rx="12" fill="#fff8ee" stroke="#e8a33d" stroke-width="1.5"/>
+  <text x="1010" y="374" class="t">Lambda Function URL → AWS Lambda (Python)</text>
+  <text x="1010" y="402" class="b">Public URL, no API Gateway</text>
+  <text x="1010" y="426" class="b">CORS: only https://resume.helipatel.com</text>
+  <text x="1010" y="450" class="b">Adds 1 to the count and returns it</text>
+
+  <!-- DynamoDB -->
+  <rect x="990" y="590" width="540" height="110" rx="12" fill="#fff8ee" stroke="#e8a33d" stroke-width="1.5"/>
+  <text x="1010" y="624" class="t">Amazon DynamoDB</text>
+  <text x="1010" y="652" class="b">Stores the view count</text>
+
+  <!-- GitHub Actions -->
+  <rect x="40" y="590" width="320" height="150" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="624" class="t">GitHub Actions</text>
+  <text x="60" y="652" class="b">On every push to main</text>
+  <text x="60" y="676" class="b">AWS login via OIDC, no stored keys</text>
+  <text x="60" y="700" class="mono">aws s3 cp Website/ → bucket</text>
+
+  <!-- Arrows -->
+  <path class="ln" d="M360,175 L478,175"/>
+  <path class="ln" d="M800,230 L800,338"/>
+  <path class="ln" d="M200,250 L200,415 L478,415"/>
+  <path class="ln" d="M660,490 L660,588"/>
+  <path class="ln" d="M200,120 L200,84 L1460,84 L1460,338"/>
+  <path class="ln" d="M1260,490 L1260,588"/>
+  <path class="ln" d="M360,665 L478,665"/>
+
+  <!-- Arrow labels (white backing so they sit cleanly on lines) -->
+  <rect x="368" y="146" width="100" height="20" fill="#ffffff"/>
+  <text x="372" y="161" class="lb">1. DNS lookup</text>
+
+  <rect x="636" y="250" width="156" height="20" fill="#ffffff"/>
+  <text x="640" y="265" class="lb">points to CloudFront</text>
+
+  <rect x="212" y="386" width="140" height="20" fill="#ffffff"/>
+  <text x="216" y="401" class="lb">2. load the page</text>
+
+  <rect x="672" y="530" width="140" height="20" fill="#ffffff"/>
+  <text x="676" y="545" class="lb">signed request (OAC)</text>
+
+  <rect x="840" y="74" width="206" height="20" fill="#ffffff"/>
+  <text x="844" y="89" class="lb">3. index.js fetches the view count</text>
+
+  <rect x="1272" y="530" width="108" height="20" fill="#ffffff"/>
+  <text x="1276" y="545" class="lb">read and update</text>
+
+  <rect x="372" y="636" width="88" height="20" fill="#ffffff"/>
+  <text x="376" y="651" class="lb">upload files</text>
+
+  <!-- Footer -->
+  <text x="40" y="830" class="b">All AWS resources are in us-east-1. Terraform manages the bucket, its encryption and policy, and the CloudFront distribution; its state is a local file.</text>
+  <text x="40" y="856" class="b">The Lambda, its Function URL, its IAM role and the DynamoDB table were set up separately and are not in the repo.</text>
+</svg>

@@ -28,7 +28,7 @@ Exploring how cloud-native applications can be deployed, scaled, monitored, and 
 
 ## Projects So Far
 
-- **[Cloud Resume Challenge](/projects/cloud-resume-challenge/):** a serverless resume site on AWS (S3, CloudFront, Route 53, Lambda, DynamoDB), built with Terraform and deployed through GitHub Actions. [See it live](https://resume.helipatel.com/).
+- **[Cloud Resume Challenge](/projects/cloud-resume-challenge/):** my resume as a static site on AWS (S3 and CloudFront, with a Lambda and DynamoDB visitor counter), with Terraform for the hosting and deploys through GitHub Actions. [See it live](https://resume.helipatel.com/).
 - **[Plant Pal](/projects/plant-pal/):** an end-to-end MLOps project that classifies plant health from images, with ZenML pipelines, MLflow tracking, and a Streamlit app.
 
 ## My Technical Interests

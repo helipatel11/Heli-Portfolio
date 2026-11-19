@@ -1,256 +1,75 @@
 ---
-title: "How I Completed the Cloud Resume Challenge (And What I Learned)"
-date: 2025-11-16
-tags: ["aws", "cloud", "terraform", "ci/cd", "serverless", "resume"]
-description: "A deep dive into building a production-grade Cloud Resume Challenge with AWS, Terraform, Lambda, DynamoDB, and CI/CD."
+title: "Cloud Resume Challenge: My Resume on S3, CloudFront and Lambda"
+date: 2025-03-14
+weight: 30
+description: "An early AWS project: my resume as a static site on S3 and CloudFront, a Lambda + DynamoDB visitor counter, Terraform and a GitHub Actions deploy, and what I'd do differently now."
+tags: ["aws", "s3", "cloudfront", "lambda", "dynamodb", "terraform", "github-actions", "earlier-work"]
 ---
 
-## Introduction
+*Built between January and March 2025, before [Plant Pal](/projects/plant-pal/) and my [LLMOps Support Assistant](/projects/llmops-support-assistant/). I've kept it here as an earlier project.*
 
-In this project, I built a **production-ready cloud resume website** using AWS S3, Route 53, Lambda, DynamoDB, Terraform, and GitHub Actions.  
-The goal wasn’t just to deploy a static website—it was to tackle **real-world cloud challenges**, including IAM permission errors, API Gateway CORS issues, Terraform quirks, and automated CI/CD deployments.
+## What it is
 
-This blog is a **step-by-step technical walkthrough**, highlighting the architecture, the challenges I faced, and the lessons I learned along the way.  
+The Cloud Resume Challenge asks you to put your resume online as a website in the cloud, with a visitor counter backed by a database, infrastructure as code and an automated deploy. Mine is live at [resume.helipatel.com](https://resume.helipatel.com/).
 
-Check out the live site [here](https://resume.helipatel.com/#contact).
+![Cloud Resume Challenge architecture](/images/cloud-resume-architecture.png)
 
----
+- **Hosting:** the site is plain HTML, CSS and JavaScript in a **private** S3 bucket, served through CloudFront. The bucket is not public. Its policy lets only my CloudFront distribution read from it, and the files are encrypted at rest (SSE-S3).
+- **HTTPS:** CloudFront serves `resume.helipatel.com` with an ACM certificate, HTTPS only, TLS 1.2 minimum.
+- **DNS:** Squarespace answers for my domain, and `resume.helipatel.com` is a CNAME pointing at the CloudFront distribution. I had also created a Route 53 hosted zone with an alias record for it, but the domain's nameservers pointed to Squarespace, so Route 53 was never asked. I deleted that zone in November 2026.
+- **Visitor counter:** when the page loads, `index.js` calls a Lambda Function URL. A Python Lambda adds 1 to the count stored in DynamoDB and returns it, and the page shows "Views: N".
+- **Deploys:** on every push to `main`, GitHub Actions logs into AWS with OIDC, so no AWS keys are stored in GitHub, and copies the `Website/` folder to the bucket.
+- **Terraform:** manages the bucket, its encryption and policy, and the CloudFront distribution. The counter (the Lambda, its Function URL, its IAM role and the DynamoDB table) is not in Terraform.
 
-## Architecture Overview
+## How it fits together
 
-![Cloud Resume Architecture](/images/cloud-resume-architecture.png)
+The most important design choice is that the bucket stays private. CloudFront signs its requests to S3 (Origin Access Control), and the bucket policy only accepts requests from that one distribution:
 
-* **Frontend:** Static website hosted on S3 and delivered via CloudFront for CDN and HTTPS support.
-* **Backend:** AWS Lambda functions written in Python, exposed through API Gateway, reading/writing to DynamoDB.
-* **CI/CD:** GitHub Actions automatically deploys changes to both frontend and backend.
-* **Domain:** Route 53 manages the custom domain, with DNS configured for CloudFront.
-
----
-
-## Step-by-Step Implementation
-
-### 1. Hosting the Frontend on S3
-
-Setting up S3 for static website hosting was straightforward, but ensuring proper security and public access required careful IAM configuration.
-
-**Snippet placeholder:**
-
-```python
+```json
 {
-  "Version": "2008-10-17",
-  "Id": "PolicyForCloudFrontPrivateContent",
-  "Statement": [
-    {
-      "Sid": "AllowCloudFrontServicePrincipal",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "cloudfront.amazonaws.com"
-      },
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::<BUCKET_NAME>/*",  // Replace with your S3 bucket
-      "Condition": {
-        "StringEquals": {
-          "AWS:SourceArn": "arn:aws:cloudfront::<ACCOUNT_ID>:distribution/<DISTRIBUTION_ID>" 
-          // Replace with your CloudFront distribution ARN
-        }
-      }
+  "Sid": "AllowCloudFrontServicePrincipal",
+  "Effect": "Allow",
+  "Principal": { "Service": "cloudfront.amazonaws.com" },
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::<BUCKET_NAME>/*",
+  "Condition": {
+    "StringEquals": {
+      "AWS:SourceArn": "arn:aws:cloudfront::<ACCOUNT_ID>:distribution/<DISTRIBUTION_ID>"
     }
-  ]
-}
-
-
-```
-
-Route 53 integration for the custom domain involved careful DNS propagation handling and CloudFront distribution setup.
-
----
-
-### 2. API Gateway + Lambda for Visitor Counter
-
-The Lambda function handles visitor counting and updates DynamoDB. Initial integration caused multiple issues:
-
-* CORS errors
-* 403 Forbidden responses
-* Misconfigured IAM roles
-
-After debugging, I implemented a **minimal privilege IAM policy** to secure the Lambda function.
-
-**Snippet placeholder:**
-
-```python
-import json
-import boto3
-
-# Connect to DynamoDB (credentials handled via IAM role)
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table("<DYNAMODB_TABLE_NAME>")  # Replace with your table name
-
-def lambda_handler(event, context):
-    """
-    Lambda function to increment and return visitor count.
-    Safe for public sharing: no sensitive credentials included.
-    """
-    # Fetch current visitor count
-    response = table.get_item(Key={'id': '0'})
-    views = response['Item']['views']
-
-    # Increment count
-    views += 1
-    print(f"Visitor count: {views}")
-
-    # Update count in DynamoDB
-    table.put_item(Item={'id': '0', 'views': views})
-
-    return views
-
-```
-
----
-
-### 3. DynamoDB Setup
-
-DynamoDB served as the persistent store for visitor counts. Challenges included:
-
-* Assigning correct IAM permissions
-* Preventing duplicate writes
-* Ensuring accurate data persistence
-
-**Snippet placeholder:**
-
-```hcl
-resource "aws_dynamodb_table" "visitor_count" {
-  name         = "visitor-counter"  # Example name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  attribute {
-    name = "id"
-    type = "S"
   }
 }
-
 ```
 
----
+So the only way to the files is through CloudFront and HTTPS. Nobody can read the bucket directly.
 
-### 4. Infrastructure as Code with Terraform
+The counter is a few lines of JavaScript. The page shows "Couldn't read views" by default, and replaces it when the call succeeds:
 
-Terraform was used to provision S3, CloudFront, Lambda, DynamoDB, and IAM resources.
-
-Key lessons:
-
-* Modular Terraform structure is critical
-* Remote state with S3 + DynamoDB locking prevents state corruption
-* Debugging conflicts between resources requires careful planning
-
-**Snippet placeholder:**
-
-```hcl
-resource "aws_iam_role" "lambda_exec" {
-  name = "lambda-exec-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = { Service = "lambda.amazonaws.com" }
-      }
-    ]
-  })
+```javascript
+const counter = document.querySelector(".counter-number")
+async function updateCounter(){
+    let response = await fetch("https://<FUNCTION_URL_ID>.lambda-url.us-east-1.on.aws/")
+    let data = await response.json()
+    counter.innerHTML = `Views: ${data}`;
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_dynamodb" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
-
+updateCounter();
 ```
 
----
+The counter uses a Lambda Function URL, not API Gateway. For one endpoint that only returns a number, it is the simpler option: there's no API to configure, and CORS is set on the URL itself.
 
-### 5. CI/CD with GitHub Actions
+## What I ran into
 
-Automated deployment of both frontend and backend via GitHub Actions. Challenges included:
+- **CORS.** The browser blocked the counter call until the Function URL allowed my site's origin. Now only `https://resume.helipatel.com` gets the CORS header.
+- **The deploy pipeline.** It took about a dozen commits to get the GitHub Actions deploy working. Once it did, every push updated the live site.
+- **IAM.** The counter only worked once the Lambda had the right DynamoDB permissions.
 
-* Secure AWS credential management
-* Debugging pipeline failures
-* Handling sequential deployments of backend before frontend
+## Looking back (November 2026)
 
-**Snippet placeholder:**
+The main thing I'd change is that **Terraform only covers half the project.** The hosting is in code, but the counter was set up by hand, so I couldn't rebuild it from the repo.
 
-```yaml
-name: Update S3 Bucket with OIDC
+I'd also:
 
-on:
-  push:
-    branches:
-      - main  # Trigger on push to the main branch (adjust as needed)
+- **Use remote Terraform state.** The state is a local file on my laptop. An S3 backend with locking would keep it safe.
+- **Add tests.** A unit test for the Lambda and a smoke test after each deploy would catch a broken counter before a visitor does.
 
-permissions:
-  id-token: write
-  contents: read
-
-jobs:
-  update_s3:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Configure AWS OIDC credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}  # Placeholder for IAM Role ARN
-          aws-region: <AWS_REGION>  # Replace with your AWS region
-
-      - name: Upload file to S3
-        run: |
-          aws s3 cp ./Website s3://${{ secrets.AWS_S3_BUCKET_NAME }}/ --recursive
-          # Bucket name is stored as a GitHub secret, never hardcode it
-
-```
-
----
-
-## Challenges and Solutions
-
-**IAM Role Debugging**
-Lambda initially failed due to missing `dynamodb:UpdateItem`. CloudWatch logs helped identify the silent failure. Implemented minimal-privilege policy iteratively.
-
-**CORS Issues in API Gateway**
-Had to explicitly add `Access-Control-Allow-Origin` headers and test with Postman for real-time debugging.
-
-**Terraform Errors**
-Resource conflicts arose when modules weren’t structured cleanly. Learned to separate modules and manage remote state locking.
-
-**DNS Configuration with Route 53**
-Patience required for propagation. Ensured proper configuration for CloudFront distribution to respect HTTPS.
-
-**GitHub Actions Authentication Failures**
-Initially, pipelines failed due to misconfigured secrets. Added AWS credentials securely and validated workflow locally before pushing.
-
----
-
-## Key Takeaways
-
-* **Real-world cloud projects are rarely linear.** Debugging is a major part of the work.
-* **IAM permissions are tricky.** Least privilege policies reduce risk but require careful testing.
-* **Terraform modules + remote state = stability.** Modular infrastructure improves maintainability.
-* **CI/CD pipelines save time.** Automation is essential, but pipelines must be validated thoroughly.
-* **Logging is everything.** CloudWatch, Terraform plan output, and CI/CD logs are critical for debugging.
-
----
-
-## Final Thoughts
-
-The Cloud Resume Challenge was not just an exercise in deployment; it was a **hands-on deep dive into AWS, Terraform, CI/CD, and serverless architecture**.
-I now have real-world experience building, securing, and automating cloud infrastructure end-to-end—skills directly relevant to MLOps and cloud engineering roles.
-
-This project taught me how to debug, design, and deliver **production-grade cloud systems**. If you want to level up your cloud skills, I highly recommend tackling this challenge.
-
----
-
-
-
+My [LLMOps Support Assistant](/projects/llmops-support-assistant/) is what I'd build now: the infrastructure is created by Terraform, and the pipeline runs tests before anything ships.
