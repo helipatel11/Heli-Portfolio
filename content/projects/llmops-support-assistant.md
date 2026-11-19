@@ -11,7 +11,7 @@ cover:
   alt: "Rollback drill: a bad image passes every probe; only monitoring catches it"
   hiddenInSingle: true
 # Demo video: set ONE of these and the "Demo" section appears automatically.
-# demoYouTube: ""                        # YouTube video ID (unlisted is fine)
+demoYouTube: "qWQuKy4leRo"               # unlisted YouTube demo
 # demoVideo: "/videos/llmops-demo.mp4"   # or an mp4 in static/videos/
 ---
 
