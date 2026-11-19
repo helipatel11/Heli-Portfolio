@@ -41,7 +41,7 @@
   <text x="500" y="374" class="t">Amazon CloudFront</text>
   <text x="500" y="402" class="b">ACM certificate for resume.helipatel.com</text>
   <text x="500" y="426" class="b">HTTPS only, TLS 1.2 minimum</text>
-  <text x="500" y="450" class="b">Caching disabled: every request goes to S3</text>
+  <text x="500" y="450" class="b">Edge caching (AWS CachingOptimized policy)</text>
 
   <!-- S3 -->
   <rect x="480" y="590" width="360" height="150" rx="12" fill="#fff8ee" stroke="#e8a33d" stroke-width="1.5"/>
