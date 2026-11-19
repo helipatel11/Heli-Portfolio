@@ -73,3 +73,5 @@ I'd also:
 - **Add tests.** A unit test for the Lambda and a smoke test after each deploy would catch a broken counter before a visitor does.
 
 My [LLMOps Support Assistant](/projects/llmops-support-assistant/) is what I'd build now: the infrastructure is created by Terraform, and the pipeline runs tests before anything ships.
+
+**Code:** [github.com/helipatel11/cloud-resume-challenge](https://github.com/helipatel11/cloud-resume-challenge)
